@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>支付管理系统 - 首页看板</title>
+  <style>
+    :root {
+      --primary: #0f2f57;
+      --primary-weak: #eaf1f8;
+      --success: #12a150;
+      --success-weak: #e9f7ef;
+      --warning: #f79009;
+      --warning-weak: #fff7e6;
+      --danger: #d92d20;
+      --danger-weak: #fff1f0;
+      --text: #1f2937;
+      --muted: #667085;
+      --line: #d9e2ec;
+      --bg: #f5f7fa;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 1280px;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 220px;
+      color: #d7e4f2;
+      background: #0b2a4a;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      height: 64px;
+      padding: 0 20px;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--white);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav {
+      padding: 14px 10px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      height: 42px;
+      padding: 0 14px;
+      margin-bottom: 4px;
+      font-size: 14px;
+      color: #c6d5e6;
+      border-radius: 6px;
+    }
+
+    .nav-item.active {
+      color: var(--white);
+      background: #174d7c;
+      box-shadow: inset 3px 0 0 var(--success);
+    }
+
+    .nav-dot {
+      width: 7px;
+      height: 7px;
+      margin-right: 10px;
+      background: currentColor;
+      border-radius: 50%;
+      opacity: 0.7;
+    }
+
+    .main {
+      grid-column: 2;
+      min-width: 0;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      padding: 0 28px;
+      background: var(--white);
+      border-bottom: 1px solid #e6edf5;
+    }
+
+    .platform-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .user-actions {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .logout {
+      color: var(--primary);
+      cursor: default;
+    }
+
+    .content {
+      padding: 24px 28px 32px;
+    }
+
+    .page-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      line-height: 1.3;
+      color: var(--text);
+      letter-spacing: 0;
+    }
+
+    .scope {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .date-pill {
+      display: inline-flex;
+      align-items: center;
+      height: 32px;
+      padding: 0 12px;
+      font-size: 13px;
+      color: #34516f;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid #e6edf5;
+      border-radius: 8px;
+      box-shadow: 0 8px 18px rgba(15, 47, 87, 0.04);
+    }
+
+    .metric-card {
+      min-height: 126px;
+      padding: 18px;
+    }
+
+    .metric-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .metric-value {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--text);
+      letter-spacing: 0;
+    }
+
+    .metric-value.money {
+      color: var(--primary);
+    }
+
+    .metric-sub {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #8a98aa;
+    }
+
+    .trend-up {
+      color: var(--success);
+    }
+
+    .trend-down {
+      color: var(--danger);
+    }
+
+    .panel-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .panel-title h2 {
+      margin: 0;
+      font-size: 16px;
+      color: var(--text);
+      letter-spacing: 0;
+    }
+
+    .panel-title span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .channel-list {
+      display: grid;
+      gap: 16px;
+    }
+
+    .channel-row {
+      display: grid;
+      grid-template-columns: 150px 1fr 64px;
+      gap: 14px;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .channel-name {
+      color: #344054;
+    }
+
+    .bar {
+      height: 10px;
+      overflow: hidden;
+      background: #edf2f7;
+      border-radius: 999px;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--success), #41b883);
+      border-radius: 999px;
+    }
+
+    .bar-fill.warning {
+      background: linear-gradient(90deg, var(--warning), #fdb022);
+    }
+
+    .bar-fill.danger {
+      background: linear-gradient(90deg, var(--danger), #f97066);
+    }
+
+    .rate {
+      font-weight: 700;
+      text-align: right;
+      color: var(--primary);
+    }
+
+    .account-summary {
+      display: grid;
+      gap: 12px;
+    }
+
+    .summary-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: #f8fafc;
+      border: 1px solid #eef2f6;
+      border-radius: 6px;
+    }
+
+    .summary-item span {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .summary-item strong {
+      font-size: 18px;
+      color: var(--primary);
+    }
+
+    .table-card {
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th,
+    td {
+      height: 48px;
+      padding: 0 16px;
+      overflow: hidden;
+      font-size: 13px;
+      text-align: left;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    th {
+      height: 44px;
+      font-weight: 600;
+      color: #475467;
+      background: #f8fafc;
+    }
+
+    td {
+      color: #344054;
+      background: var(--white);
+    }
+
+    .amount {
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 4px;
+    }
+
+    .tag.fail {
+      color: var(--danger);
+      background: var(--danger-weak);
+      border: 1px solid #ffd6d2;
+    }
+
+    .tag.warn {
+      color: #b54708;
+      background: var(--warning-weak);
+      border: 1px solid #fedf89;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">支付管理系统</div>
+      <nav class="nav" aria-label="主导航">
+        <div class="nav-item active"><span class="nav-dot"></span>首页看板</div>
+        <div class="nav-item"><span class="nav-dot"></span>账号与平台关联</div>
+        <div class="nav-item"><span class="nav-dot"></span>业务平台管理</div>
+        <div class="nav-item"><span class="nav-dot"></span>支付账号管理</div>
+        <div class="nav-item"><span class="nav-dot"></span>支付路由配置</div>
+        <div class="nav-item"><span class="nav-dot"></span>支付订单管理</div>
+        <div class="nav-item"><span class="nav-dot"></span>退款管理</div>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="platform-name">当前平台：华东商城</div>
+        <div class="user-actions">
+          <span>当前登录用户：admin</span>
+          <span class="logout">退出登录</span>
+        </div>
+      </header>
+
+      <section class="content">
+        <div class="page-head">
+          <div>
+            <h1>首页看板</h1>
+            <p class="scope">数据范围：当前账号关联平台「华东商城」</p>
+          </div>
+          <span class="date-pill">今日 00:00 - 当前</span>
+        </div>
+
+        <section class="metric-grid" aria-label="核心支付指标">
+          <div class="card metric-card">
+            <div class="metric-label">今日支付金额 <span class="trend-up">+8.6%</span></div>
+            <div class="metric-value money">¥128,640.80</div>
+            <div class="metric-sub">昨日同期 ¥118,472.20</div>
+          </div>
+          <div class="card metric-card">
+            <div class="metric-label">今日支付订单数 <span class="trend-up">+5.2%</span></div>
+            <div class="metric-value">3,286</div>
+            <div class="metric-sub">成功订单 3,145 笔</div>
+          </div>
+          <div class="card metric-card">
+            <div class="metric-label">今日支付成功率 <span class="trend-down">-0.7%</span></div>
+            <div class="metric-value">95.7%</div>
+            <div class="metric-sub">失败订单 141 笔</div>
+          </div>
+          <div class="card metric-card">
+            <div class="metric-label">今日退款金额 <span class="trend-up">+1.4%</span></div>
+            <div class="metric-value money">¥6,218.00</div>
+            <div class="metric-sub">退款订单 42 笔</div>
+          </div>
+          <div class="card metric-card">
+            <div class="metric-label">启用支付账号数 <span>正常</span></div>
+            <div class="metric-value">8</div>
+            <div class="metric-sub">共接入支付账号 10 个</div>
+          </div>
+        </section>
+
+        <section class="panel-grid">
+          <div class="card panel">
+            <div class="panel-title">
+              <h2>各支付渠道成功率</h2>
+              <span>按今日支付订单统计</span>
+            </div>
+            <div class="channel-list">
+              <div class="channel-row">
+                <div class="channel-name">微信 JSAPI 支付</div>
+                <div class="bar"><div class="bar-fill" style="width: 98.2%"></div></div>
+                <div class="rate">98.2%</div>
+              </div>
+              <div class="channel-row">
+                <div class="channel-name">微信 H5 支付</div>
+                <div class="bar"><div class="bar-fill" style="width: 96.8%"></div></div>
+                <div class="rate">96.8%</div>
+              </div>
+              <div class="channel-row">
+                <div class="channel-name">微信 Native 支付</div>
+                <div class="bar"><div class="bar-fill warning" style="width: 92.4%"></div></div>
+                <div class="rate">92.4%</div>
+              </div>
+              <div class="channel-row">
+                <div class="channel-name">备用商户通道</div>
+                <div class="bar"><div class="bar-fill danger" style="width: 86.1%"></div></div>
+                <div class="rate">86.1%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card panel">
+            <div class="panel-title">
+              <h2>支付账号状态</h2>
+              <span>当前平台</span>
+            </div>
+            <div class="account-summary">
+              <div class="summary-item"><span>已启用</span><strong>8</strong></div>
+              <div class="summary-item"><span>已停用</span><strong>2</strong></div>
+              <div class="summary-item"><span>异常告警</span><strong>1</strong></div>
+              <div class="summary-item"><span>路由规则</span><strong>6</strong></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card table-card">
+          <div class="panel">
+            <div class="panel-title">
+              <h2>最近失败订单</h2>
+              <span>仅展示当前平台订单</span>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 180px;">订单号</th>
+                <th style="width: 140px;">支付渠道</th>
+                <th style="width: 160px;">支付账号</th>
+                <th style="width: 120px;">金额</th>
+                <th>失败原因</th>
+                <th style="width: 130px;">状态</th>
+                <th style="width: 170px;">失败时间</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>PAY20260601092831</td>
+                <td>微信 H5 支付</td>
+                <td>华东主商户</td>
+                <td class="amount">¥238.00</td>
+                <td>用户支付超时，订单自动关闭</td>
+                <td><span class="tag fail">支付失败</span></td>
+                <td>2026-06-01 09:28:31</td>
+              </tr>
+              <tr>
+                <td>PAY20260601091644</td>
+                <td>备用商户通道</td>
+                <td>华东备用账号</td>
+                <td class="amount">¥1,026.50</td>
+                <td>通道返回签名校验失败</td>
+                <td><span class="tag warn">通道异常</span></td>
+                <td>2026-06-01 09:16:44</td>
+              </tr>
+              <tr>
+                <td>PAY20260601090217</td>
+                <td>微信 Native 支付</td>
+                <td>活动收款账号</td>
+                <td class="amount">¥89.90</td>
+                <td>支付账号余额风控限制</td>
+                <td><span class="tag warn">账号异常</span></td>
+                <td>2026-06-01 09:02:17</td>
+              </tr>
+              <tr>
+                <td>PAY20260601084509</td>
+                <td>微信 JSAPI 支付</td>
+                <td>华东主商户</td>
+                <td class="amount">¥368.00</td>
+                <td>用户取消支付</td>
+                <td><span class="tag fail">支付失败</span></td>
+                <td>2026-06-01 08:45:09</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

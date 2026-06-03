@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>支付管理系统 - 支付订单管理</title>
+  <style>
+    :root {
+      --primary: #0f2f57;
+      --primary-light: #1f5d99;
+      --success: #12a150;
+      --success-weak: #e9f7ef;
+      --warning: #f79009;
+      --warning-weak: #fff7e6;
+      --danger: #d92d20;
+      --danger-weak: #fff1f0;
+      --info: #1570ef;
+      --info-weak: #eff6ff;
+      --text: #1f2937;
+      --muted: #667085;
+      --line: #d9e2ec;
+      --bg: #f5f7fa;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 1280px;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 220px;
+      color: #d7e4f2;
+      background: #0b2a4a;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      height: 64px;
+      padding: 0 20px;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--white);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav {
+      padding: 14px 10px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      height: 42px;
+      padding: 0 14px;
+      margin-bottom: 4px;
+      font-size: 14px;
+      color: #c6d5e6;
+      text-decoration: none;
+      border-radius: 6px;
+    }
+
+    .nav-item.active {
+      color: var(--white);
+      background: #174d7c;
+      box-shadow: inset 3px 0 0 var(--success);
+    }
+
+    .nav-dot {
+      width: 7px;
+      height: 7px;
+      margin-right: 10px;
+      background: currentColor;
+      border-radius: 50%;
+      opacity: 0.7;
+    }
+
+    .main {
+      grid-column: 2;
+      min-width: 0;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      padding: 0 28px;
+      background: var(--white);
+      border-bottom: 1px solid #e6edf5;
+    }
+
+    .platform-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .user-actions {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .logout {
+      color: var(--primary);
+      cursor: default;
+    }
+
+    .content {
+      padding: 24px 28px 32px;
+    }
+
+    .page-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      line-height: 1.3;
+      color: var(--text);
+      letter-spacing: 0;
+    }
+
+    .scope {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .date-pill {
+      display: inline-flex;
+      align-items: center;
+      height: 32px;
+      padding: 0 12px;
+      font-size: 13px;
+      color: #34516f;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 34px;
+      padding: 0 14px;
+      font-size: 14px;
+      color: #344054;
+      cursor: pointer;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .button.primary {
+      color: var(--white);
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .button + .button {
+      margin-left: 8px;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid #e6edf5;
+      border-radius: 8px;
+      box-shadow: 0 8px 18px rgba(15, 47, 87, 0.04);
+    }
+
+    .filter-card {
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr) 180px 180px 172px;
+      gap: 14px;
+      align-items: end;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #475467;
+    }
+
+    .input,
+    .select {
+      width: 100%;
+      height: 34px;
+      padding: 0 10px;
+      font-size: 14px;
+      color: var(--text);
+      background: #fbfcfe;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .input:focus,
+    .select:focus {
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(31, 93, 153, 0.12);
+    }
+
+    .table-card {
+      overflow: hidden;
+    }
+
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .table-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .table-sub {
+      margin-left: 8px;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--muted);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th,
+    td {
+      height: 54px;
+      padding: 0 14px;
+      overflow: hidden;
+      font-size: 13px;
+      text-align: left;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    th {
+      height: 44px;
+      font-weight: 600;
+      color: #475467;
+      background: #f8fafc;
+    }
+
+    td {
+      color: #344054;
+      background: var(--white);
+    }
+
+    .order-link {
+      padding: 0;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary-light);
+      cursor: pointer;
+      background: transparent;
+      border: 0;
+    }
+
+    .biz-no {
+      font-family: Menlo, Consolas, monospace;
+      color: #34516f;
+    }
+
+    .amount {
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .fail-reason {
+      color: var(--danger);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 4px;
+    }
+
+    .tag.pending {
+      color: #b54708;
+      background: var(--warning-weak);
+      border: 1px solid #fedf89;
+    }
+
+    .tag.processing {
+      color: var(--info);
+      background: var(--info-weak);
+      border: 1px solid #bfd7ff;
+    }
+
+    .tag.success {
+      color: #087443;
+      background: var(--success-weak);
+      border: 1px solid #bfe8ce;
+    }
+
+    .tag.failed {
+      color: var(--danger);
+      background: var(--danger-weak);
+      border: 1px solid #ffd6d2;
+    }
+
+    .tag.closed {
+      color: #667085;
+      background: #f2f4f7;
+      border: 1px solid #d0d5dd;
+    }
+
+    .tag.channel {
+      color: #34516f;
+      background: #f2f7fc;
+      border: 1px solid #dbe8f5;
+    }
+
+    .link-button {
+      padding: 0;
+      margin-right: 12px;
+      font-size: 13px;
+      color: var(--primary-light);
+      cursor: pointer;
+      background: transparent;
+      border: 0;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 14px 18px;
+      font-size: 13px;
+      color: var(--muted);
+      background: var(--white);
+    }
+
+    .page-btn {
+      min-width: 30px;
+      height: 30px;
+      padding: 0 9px;
+      color: #344054;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .page-btn.active {
+      color: var(--white);
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .mask {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      background: rgba(15, 23, 42, 0.36);
+    }
+
+    .mask.show {
+      display: block;
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      width: 560px;
+      height: 100vh;
+      background: var(--white);
+      box-shadow: -16px 0 36px rgba(15, 47, 87, 0.18);
+      transform: translateX(100%);
+      transition: transform 0.2s ease;
+    }
+
+    .drawer.show {
+      transform: translateX(0);
+    }
+
+    .drawer-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      padding: 0 20px;
+      border-bottom: 1px solid #e6edf5;
+    }
+
+    .drawer-head h2 {
+      margin: 0;
+      font-size: 16px;
+      color: var(--text);
+    }
+
+    .close {
+      width: 30px;
+      height: 30px;
+      font-size: 20px;
+      color: #667085;
+      cursor: pointer;
+      background: transparent;
+      border: 0;
+    }
+
+    .drawer-body {
+      flex: 1;
+      padding: 20px;
+      overflow: auto;
+    }
+
+    .detail-section {
+      padding-bottom: 18px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .detail-section h3 {
+      margin: 0 0 14px;
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 126px 1fr;
+      row-gap: 12px;
+      font-size: 14px;
+    }
+
+    .detail-grid span {
+      color: var(--muted);
+    }
+
+    .detail-grid strong {
+      color: var(--text);
+    }
+
+    .detail-amount {
+      font-size: 22px;
+      color: var(--primary);
+    }
+
+    .refund-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .refund-item {
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid #edf2f7;
+      border-radius: 6px;
+    }
+
+    .refund-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: var(--primary);
+    }
+
+    .refund-item span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">支付管理系统</div>
+      <nav class="nav" aria-label="主导航">
+        <a class="nav-item" href="dashboard.html"><span class="nav-dot"></span>首页看板</a>
+        <a class="nav-item" href="account-platform.html"><span class="nav-dot"></span>账号与平台关联</a>
+        <a class="nav-item" href="business-platform.html"><span class="nav-dot"></span>业务平台管理</a>
+        <a class="nav-item" href="payment-account.html"><span class="nav-dot"></span>支付账号管理</a>
+        <a class="nav-item" href="#"><span class="nav-dot"></span>支付路由配置</a>
+        <a class="nav-item active" href="payment-order.html"><span class="nav-dot"></span>支付订单管理</a>
+        <a class="nav-item" href="#"><span class="nav-dot"></span>退款管理</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="platform-name">当前平台：华东商城</div>
+        <div class="user-actions">
+          <span>当前登录用户：admin</span>
+          <span class="logout">退出登录</span>
+        </div>
+      </header>
+
+      <section class="content">
+        <div class="page-head">
+          <div>
+            <h1>支付订单管理</h1>
+            <p class="scope">数据范围：当前账号关联平台「华东商城」</p>
+          </div>
+          <span class="date-pill">默认展示近 7 日 H5 支付请求</span>
+        </div>
+
+        <section class="card filter-card" aria-label="筛选条件">
+          <div class="filter-grid">
+            <div class="field">
+              <label for="systemOrderNo">系统订单号</label>
+              <input class="input" id="systemOrderNo" type="text" placeholder="请输入系统订单号">
+            </div>
+            <div class="field">
+              <label for="bizOrderNo">业务订单号</label>
+              <input class="input" id="bizOrderNo" type="text" placeholder="请输入业务订单号">
+            </div>
+            <div class="field">
+              <label for="payStatus">支付状态</label>
+              <select class="select" id="payStatus">
+                <option>全部状态</option>
+                <option>待支付</option>
+                <option>支付中</option>
+                <option>成功</option>
+                <option>失败</option>
+                <option>已关闭</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="payChannel">支付渠道</label>
+              <select class="select" id="payChannel">
+                <option>全部渠道</option>
+                <option>微信支付直连</option>
+                <option>鲲鹏支付</option>
+                <option>富有支付</option>
+                <option>其他支付</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="payAccount">支付账号</label>
+              <select class="select" id="payAccount">
+                <option>全部账号</option>
+                <option>华东主商户</option>
+                <option>活动收款账号</option>
+                <option>备用聚合通道</option>
+              </select>
+            </div>
+            <div>
+              <button class="button primary" type="button">查询</button>
+              <button class="button" type="button">重置</button>
+            </div>
+            <div class="field">
+              <label for="startTime">创建时间开始</label>
+              <input class="input" id="startTime" type="text" value="2026-06-01 00:00">
+            </div>
+            <div class="field">
+              <label for="endTime">创建时间结束</label>
+              <input class="input" id="endTime" type="text" value="2026-06-01 23:59">
+            </div>
+          </div>
+        </section>
+
+        <section class="card table-card">
+          <div class="table-toolbar">
+            <div class="table-title">支付订单列表<span class="table-sub">点击系统订单号查看详情</span></div>
+            <button class="button" type="button">导出订单</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 172px;">系统订单号</th>
+                <th style="width: 150px;">业务订单号</th>
+                <th style="width: 120px;">支付金额</th>
+                <th style="width: 116px;">支付状态</th>
+                <th style="width: 128px;">支付渠道</th>
+                <th style="width: 132px;">支付账号</th>
+                <th style="width: 160px;">创建时间</th>
+                <th style="width: 160px;">完成时间</th>
+                <th>失败原因</th>
+                <th style="width: 116px;">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><button class="order-link detail-row" type="button">PAY20260601092831</button></td>
+                <td class="biz-no">BIZ2506010928</td>
+                <td class="amount">¥238.00</td>
+                <td><span class="tag failed">失败</span></td>
+                <td><span class="tag channel">微信 H5</span></td>
+                <td>华东主商户</td>
+                <td>2026-06-01 09:28:31</td>
+                <td>-</td>
+                <td class="fail-reason">用户支付超时，订单自动关闭</td>
+                <td><button class="link-button detail-row" type="button">详情</button></td>
+              </tr>
+              <tr>
+                <td><button class="order-link detail-row" type="button">PAY20260601091644</button></td>
+                <td class="biz-no">BIZ2506010916</td>
+                <td class="amount">¥1,026.50</td>
+                <td><span class="tag failed">失败</span></td>
+                <td><span class="tag channel">富有支付</span></td>
+                <td>备用聚合通道</td>
+                <td>2026-06-01 09:16:44</td>
+                <td>-</td>
+                <td class="fail-reason">通道返回签名校验失败</td>
+                <td><button class="link-button detail-row" type="button">详情</button></td>
+              </tr>
+              <tr>
+                <td><button class="order-link detail-row" type="button">PAY20260601090217</button></td>
+                <td class="biz-no">BIZ2506010902</td>
+                <td class="amount">¥89.90</td>
+                <td><span class="tag success">成功</span></td>
+                <td><span class="tag channel">鲲鹏支付</span></td>
+                <td>活动收款账号</td>
+                <td>2026-06-01 09:02:17</td>
+                <td>2026-06-01 09:02:36</td>
+                <td>-</td>
+                <td><button class="link-button detail-row" type="button">详情</button></td>
+              </tr>
+              <tr>
+                <td><button class="order-link detail-row" type="button">PAY20260601085603</button></td>
+                <td class="biz-no">BIZ2506010856</td>
+                <td class="amount">¥516.00</td>
+                <td><span class="tag processing">支付中</span></td>
+                <td><span class="tag channel">微信 H5</span></td>
+                <td>会员充值商户</td>
+                <td>2026-06-01 08:56:03</td>
+                <td>-</td>
+                <td>-</td>
+                <td><button class="link-button detail-row" type="button">详情</button></td>
+              </tr>
+              <tr>
+                <td><button class="order-link detail-row" type="button">PAY20260601084509</button></td>
+                <td class="biz-no">BIZ2506010845</td>
+                <td class="amount">¥368.00</td>
+                <td><span class="tag closed">已关闭</span></td>
+                <td><span class="tag channel">微信 JSAPI</span></td>
+                <td>华东主商户</td>
+                <td>2026-06-01 08:45:09</td>
+                <td>-</td>
+                <td>用户取消支付</td>
+                <td><button class="link-button detail-row" type="button">详情</button></td>
+              </tr>
+              <tr>
+                <td><button class="order-link detail-row" type="button">PAY20260601083322</button></td>
+                <td class="biz-no">BIZ2506010833</td>
+                <td class="amount">¥129.00</td>
+                <td><span class="tag pending">待支付</span></td>
+                <td><span class="tag channel">微信 H5</span></td>
+                <td>华东主商户</td>
+                <td>2026-06-01 08:33:22</td>
+                <td>-</td>
+                <td>-</td>
+                <td><button class="link-button detail-row" type="button">详情</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination">
+            <span>第 1-6 条 / 共 3,286 条</span>
+            <button class="page-btn" type="button">上一页</button>
+            <button class="page-btn active" type="button">1</button>
+            <button class="page-btn" type="button">2</button>
+            <button class="page-btn" type="button">3</button>
+            <button class="page-btn" type="button">下一页</button>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="mask" id="mask"></div>
+
+  <aside class="drawer" id="drawer" aria-label="订单详情抽屉">
+    <div class="drawer-head">
+      <h2>订单详情</h2>
+      <button class="close" id="closeDrawer" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="drawer-body">
+      <section class="detail-section">
+        <h3>业务订单信息</h3>
+        <div class="detail-grid">
+          <span>系统订单号</span><strong>PAY20260601092831</strong>
+          <span>业务订单号</span><strong class="biz-no">BIZ2506010928</strong>
+          <span>业务平台</span><strong>华东商城</strong>
+          <span>订单来源</span><strong>微信 H5 收银台</strong>
+        </div>
+      </section>
+
+      <section class="detail-section">
+        <h3>支付信息</h3>
+        <div class="detail-grid">
+          <span>支付金额</span><strong class="detail-amount">¥238.00</strong>
+          <span>支付渠道</span><strong>微信 H5 支付</strong>
+          <span>支付账号</span><strong>华东主商户</strong>
+          <span>支付状态</span><strong><span class="tag failed">失败</span></strong>
+          <span>创建时间</span><strong>2026-06-01 09:28:31</strong>
+          <span>支付完成时间</span><strong>-</strong>
+          <span>失败原因</span><strong class="fail-reason">用户支付超时，订单自动关闭</strong>
+        </div>
+      </section>
+
+      <section class="detail-section">
+        <h3>退款记录</h3>
+        <div class="refund-list">
+          <div class="refund-item">
+            <strong>暂无退款记录</strong>
+            <span>支付未成功，当前订单不可发起退款。</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="detail-section">
+        <h3>成功订单退款示例</h3>
+        <div class="refund-list">
+          <div class="refund-item">
+            <strong>RF20260601090102 · ¥29.90 · 退款成功</strong>
+            <span>退款原因：用户申请部分退款；处理时间：2026-06-01 09:12:18</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <script>
+    const mask = document.querySelector("#mask");
+    const drawer = document.querySelector("#drawer");
+    const closeDrawer = document.querySelector("#closeDrawer");
+
+    const showDrawer = () => {
+      mask.classList.add("show");
+      drawer.classList.add("show");
+    };
+
+    const hideDrawer = () => {
+      drawer.classList.remove("show");
+      mask.classList.remove("show");
+    };
+
+    document.querySelectorAll(".detail-row").forEach((button) => {
+      button.addEventListener("click", showDrawer);
+    });
+
+    closeDrawer.addEventListener("click", hideDrawer);
+    mask.addEventListener("click", hideDrawer);
+  </script>
+</body>
+</html>

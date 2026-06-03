@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>支付管理系统 - 账号与平台关联</title>
+  <style>
+    :root {
+      --primary: #0f2f57;
+      --primary-light: #1f5d99;
+      --success: #12a150;
+      --success-weak: #e9f7ef;
+      --warning: #f79009;
+      --warning-weak: #fff7e6;
+      --danger: #d92d20;
+      --danger-weak: #fff1f0;
+      --text: #1f2937;
+      --muted: #667085;
+      --line: #d9e2ec;
+      --bg: #f5f7fa;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 1280px;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 220px;
+      color: #d7e4f2;
+      background: #0b2a4a;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      height: 64px;
+      padding: 0 20px;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--white);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav {
+      padding: 14px 10px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      height: 42px;
+      padding: 0 14px;
+      margin-bottom: 4px;
+      font-size: 14px;
+      color: #c6d5e6;
+      text-decoration: none;
+      border-radius: 6px;
+    }
+
+    .nav-item.active {
+      color: var(--white);
+      background: #174d7c;
+      box-shadow: inset 3px 0 0 var(--success);
+    }
+
+    .nav-dot {
+      width: 7px;
+      height: 7px;
+      margin-right: 10px;
+      background: currentColor;
+      border-radius: 50%;
+      opacity: 0.7;
+    }
+
+    .main {
+      grid-column: 2;
+      min-width: 0;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      padding: 0 28px;
+      background: var(--white);
+      border-bottom: 1px solid #e6edf5;
+    }
+
+    .platform-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .user-actions {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .logout {
+      color: var(--primary);
+      cursor: default;
+    }
+
+    .content {
+      padding: 24px 28px 32px;
+    }
+
+    .page-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      line-height: 1.3;
+      color: var(--text);
+      letter-spacing: 0;
+    }
+
+    .scope {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 34px;
+      padding: 0 14px;
+      font-size: 14px;
+      color: #344054;
+      cursor: pointer;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .button.primary {
+      color: var(--white);
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .button.danger {
+      color: var(--danger);
+      border-color: #ffd6d2;
+    }
+
+    .button + .button {
+      margin-left: 8px;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid #e6edf5;
+      border-radius: 8px;
+      box-shadow: 0 8px 18px rgba(15, 47, 87, 0.04);
+    }
+
+    .filter-card {
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr) 172px;
+      gap: 14px;
+      align-items: end;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #475467;
+    }
+
+    .input,
+    .select {
+      width: 100%;
+      height: 34px;
+      padding: 0 10px;
+      font-size: 14px;
+      color: var(--text);
+      background: #fbfcfe;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .input:focus,
+    .select:focus {
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(31, 93, 153, 0.12);
+    }
+
+    .table-card {
+      overflow: hidden;
+    }
+
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .table-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .table-sub {
+      margin-left: 8px;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--muted);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th,
+    td {
+      height: 52px;
+      padding: 0 16px;
+      overflow: hidden;
+      font-size: 13px;
+      text-align: left;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    th {
+      height: 44px;
+      font-weight: 600;
+      color: #475467;
+      background: #f8fafc;
+    }
+
+    td {
+      color: #344054;
+      background: var(--white);
+    }
+
+    .account {
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 4px;
+    }
+
+    .tag.enable {
+      color: #087443;
+      background: var(--success-weak);
+      border: 1px solid #bfe8ce;
+    }
+
+    .tag.disable {
+      color: #667085;
+      background: #f2f4f7;
+      border: 1px solid #d0d5dd;
+    }
+
+    .tag.warn {
+      color: #b54708;
+      background: var(--warning-weak);
+      border: 1px solid #fedf89;
+    }
+
+    .link-button {
+      padding: 0;
+      margin-right: 12px;
+      font-size: 13px;
+      color: var(--primary-light);
+      cursor: pointer;
+      background: transparent;
+      border: 0;
+    }
+
+    .link-button.danger {
+      color: var(--danger);
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 14px 18px;
+      font-size: 13px;
+      color: var(--muted);
+      background: var(--white);
+    }
+
+    .page-btn {
+      min-width: 30px;
+      height: 30px;
+      padding: 0 9px;
+      color: #344054;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .page-btn.active {
+      color: var(--white);
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .mask {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      background: rgba(15, 23, 42, 0.36);
+    }
+
+    .mask.show {
+      display: block;
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      width: 460px;
+      height: 100vh;
+      background: var(--white);
+      box-shadow: -16px 0 36px rgba(15, 47, 87, 0.18);
+      transform: translateX(100%);
+      transition: transform 0.2s ease;
+    }
+
+    .drawer.show {
+      transform: translateX(0);
+    }
+
+    .drawer-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      padding: 0 20px;
+      border-bottom: 1px solid #e6edf5;
+    }
+
+    .drawer-head h2 {
+      margin: 0;
+      font-size: 16px;
+      color: var(--text);
+    }
+
+    .close {
+      width: 30px;
+      height: 30px;
+      font-size: 20px;
+      color: #667085;
+      cursor: pointer;
+      background: transparent;
+      border: 0;
+    }
+
+    .drawer-body {
+      flex: 1;
+      padding: 20px;
+      overflow: auto;
+    }
+
+    .drawer-foot {
+      display: flex;
+      justify-content: flex-end;
+      padding: 14px 20px;
+      border-top: 1px solid #e6edf5;
+    }
+
+    .form-field {
+      margin-bottom: 18px;
+    }
+
+    .form-field label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #475467;
+    }
+
+    .rule-note {
+      padding: 12px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #34516f;
+      background: #f2f7fc;
+      border: 1px solid #dbe8f5;
+      border-radius: 6px;
+    }
+
+    .confirm {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      z-index: 40;
+      display: none;
+      width: 360px;
+      padding: 22px;
+      background: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 24px 60px rgba(15, 47, 87, 0.22);
+      transform: translate(-50%, -50%);
+    }
+
+    .confirm.show {
+      display: block;
+    }
+
+    .confirm h3 {
+      margin: 0 0 10px;
+      font-size: 17px;
+      color: var(--text);
+    }
+
+    .confirm p {
+      margin: 0 0 20px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    .confirm-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">支付管理系统</div>
+      <nav class="nav" aria-label="主导航">
+        <a class="nav-item" href="dashboard.html"><span class="nav-dot"></span>首页看板</a>
+        <a class="nav-item active" href="account-platform.html"><span class="nav-dot"></span>账号与平台关联</a>
+        <a class="nav-item" href="#"><span class="nav-dot"></span>业务平台管理</a>
+        <a class="nav-item" href="#"><span class="nav-dot"></span>支付账号管理</a>
+        <a class="nav-item" href="#"><span class="nav-dot"></span>支付路由配置</a>
+        <a class="nav-item" href="#"><span class="nav-dot"></span>支付订单管理</a>
+        <a class="nav-item" href="#"><span class="nav-dot"></span>退款管理</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="platform-name">当前平台：华东商城</div>
+        <div class="user-actions">
+          <span>当前登录用户：admin</span>
+          <span class="logout">退出登录</span>
+        </div>
+      </header>
+
+      <section class="content">
+        <div class="page-head">
+          <div>
+            <h1>账号与平台关联</h1>
+            <p class="scope">后台账号仅能查看和操作已绑定业务平台的数据</p>
+          </div>
+          <button class="button primary" id="addButton" type="button">新增账号</button>
+        </div>
+
+        <section class="card filter-card" aria-label="筛选条件">
+          <div class="filter-grid">
+            <div class="field">
+              <label for="loginAccount">登录账号</label>
+              <input class="input" id="loginAccount" type="text" placeholder="请输入登录账号">
+            </div>
+            <div class="field">
+              <label for="userName">用户名称</label>
+              <input class="input" id="userName" type="text" placeholder="请输入用户名称">
+            </div>
+            <div class="field">
+              <label for="platform">所属业务平台</label>
+              <select class="select" id="platform">
+                <option>全部平台</option>
+                <option>华东商城</option>
+                <option>会员营销平台</option>
+                <option>门店收银系统</option>
+                <option>活动报名系统</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="status">账号状态</label>
+              <select class="select" id="status">
+                <option>全部状态</option>
+                <option>启用</option>
+                <option>停用</option>
+              </select>
+            </div>
+            <div>
+              <button class="button primary" type="button">查询</button>
+              <button class="button" type="button">重置</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="card table-card">
+          <div class="table-toolbar">
+            <div class="table-title">后台账号列表<span class="table-sub">共 42 条关联记录</span></div>
+            <button class="button" id="editButton" type="button">批量编辑</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 180px;">登录账号</th>
+                <th style="width: 140px;">用户名称</th>
+                <th style="width: 180px;">所属业务平台</th>
+                <th style="width: 110px;">账号状态</th>
+                <th style="width: 180px;">最近登录时间</th>
+                <th>备注</th>
+                <th style="width: 170px;">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="account">admin</td>
+                <td>平台管理员</td>
+                <td>华东商城</td>
+                <td><span class="tag enable">启用</span></td>
+                <td>2026-06-01 09:32:18</td>
+                <td>负责支付运营、订单核对和路由规则维护</td>
+                <td>
+                  <button class="link-button edit-row" type="button">编辑</button>
+                  <button class="link-button danger confirm-row" type="button" data-action="停用" data-account="admin">停用</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="account">finance_hd</td>
+                <td>华东财务</td>
+                <td>华东商城</td>
+                <td><span class="tag enable">启用</span></td>
+                <td>2026-06-01 08:54:02</td>
+                <td>查看支付订单、退款记录和对账数据</td>
+                <td>
+                  <button class="link-button edit-row" type="button">编辑</button>
+                  <button class="link-button danger confirm-row" type="button" data-action="停用" data-account="finance_hd">停用</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="account">ops_member</td>
+                <td>会员运营</td>
+                <td>会员营销平台</td>
+                <td><span class="tag enable">启用</span></td>
+                <td>2026-05-31 19:18:44</td>
+                <td>仅管理会员营销平台下的 H5 支付订单</td>
+                <td>
+                  <button class="link-button edit-row" type="button">编辑</button>
+                  <button class="link-button danger confirm-row" type="button" data-action="停用" data-account="ops_member">停用</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="account">cashier_store</td>
+                <td>门店收银</td>
+                <td>门店收银系统</td>
+                <td><span class="tag disable">停用</span></td>
+                <td>2026-05-24 14:06:11</td>
+                <td>门店收银系统迁移中，账号暂时停用</td>
+                <td>
+                  <button class="link-button edit-row" type="button">编辑</button>
+                  <button class="link-button confirm-row" type="button" data-action="启用" data-account="cashier_store">启用</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="account">event_pay</td>
+                <td>活动收款</td>
+                <td>活动报名系统</td>
+                <td><span class="tag warn">待确认</span></td>
+                <td>2026-05-30 10:22:35</td>
+                <td>新账号，待确认所属业务平台负责人</td>
+                <td>
+                  <button class="link-button edit-row" type="button">编辑</button>
+                  <button class="link-button danger confirm-row" type="button" data-action="停用" data-account="event_pay">停用</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination">
+            <span>第 1-5 条 / 共 42 条</span>
+            <button class="page-btn" type="button">上一页</button>
+            <button class="page-btn active" type="button">1</button>
+            <button class="page-btn" type="button">2</button>
+            <button class="page-btn" type="button">3</button>
+            <button class="page-btn" type="button">下一页</button>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="mask" id="mask"></div>
+
+  <aside class="drawer" id="drawer" aria-label="账号抽屉">
+    <div class="drawer-head">
+      <h2 id="drawerTitle">新增账号</h2>
+      <button class="close" id="closeDrawer" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="drawer-body">
+      <div class="rule-note">
+        一个后台账号只能关联一个业务平台，保存后该账号登录将自动进入所绑定平台。
+      </div>
+      <div class="form-field">
+        <label for="drawerAccount">登录账号</label>
+        <input class="input" id="drawerAccount" type="text" value="new_operator">
+      </div>
+      <div class="form-field">
+        <label for="drawerName">用户名称</label>
+        <input class="input" id="drawerName" type="text" value="运营专员">
+      </div>
+      <div class="form-field">
+        <label for="drawerPlatform">所属业务平台</label>
+        <select class="select" id="drawerPlatform">
+          <option>华东商城</option>
+          <option>会员营销平台</option>
+          <option>门店收银系统</option>
+          <option>活动报名系统</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="drawerStatus">账号状态</label>
+        <select class="select" id="drawerStatus">
+          <option>启用</option>
+          <option>停用</option>
+        </select>
+      </div>
+    </div>
+    <div class="drawer-foot">
+      <button class="button" id="cancelDrawer" type="button">取消</button>
+      <button class="button primary" type="button">保存</button>
+    </div>
+  </aside>
+
+  <section class="confirm" id="confirmBox" aria-label="二次确认">
+    <h3 id="confirmTitle">确认停用账号</h3>
+    <p id="confirmText">停用后，该账号将无法登录后台并管理所属平台数据。</p>
+    <div class="confirm-actions">
+      <button class="button" id="cancelConfirm" type="button">取消</button>
+      <button class="button danger" id="okConfirm" type="button">确认</button>
+    </div>
+  </section>
+
+  <script>
+    const mask = document.querySelector("#mask");
+    const drawer = document.querySelector("#drawer");
+    const drawerTitle = document.querySelector("#drawerTitle");
+    const addButton = document.querySelector("#addButton");
+    const editButton = document.querySelector("#editButton");
+    const closeDrawer = document.querySelector("#closeDrawer");
+    const cancelDrawer = document.querySelector("#cancelDrawer");
+    const confirmBox = document.querySelector("#confirmBox");
+    const confirmTitle = document.querySelector("#confirmTitle");
+    const confirmText = document.querySelector("#confirmText");
+    const cancelConfirm = document.querySelector("#cancelConfirm");
+    const okConfirm = document.querySelector("#okConfirm");
+
+    const showDrawer = (title) => {
+      drawerTitle.textContent = title;
+      mask.classList.add("show");
+      drawer.classList.add("show");
+    };
+
+    const hideDrawer = () => {
+      drawer.classList.remove("show");
+      if (!confirmBox.classList.contains("show")) {
+        mask.classList.remove("show");
+      }
+    };
+
+    const showConfirm = (action, account) => {
+      confirmTitle.textContent = `确认${action}账号`;
+      confirmText.textContent = `${action}后，账号「${account}」的后台登录和平台数据访问权限将立即变更。`;
+      mask.classList.add("show");
+      confirmBox.classList.add("show");
+    };
+
+    const hideConfirm = () => {
+      confirmBox.classList.remove("show");
+      if (!drawer.classList.contains("show")) {
+        mask.classList.remove("show");
+      }
+    };
+
+    addButton.addEventListener("click", () => showDrawer("新增账号"));
+    editButton.addEventListener("click", () => showDrawer("批量编辑账号"));
+    closeDrawer.addEventListener("click", hideDrawer);
+    cancelDrawer.addEventListener("click", hideDrawer);
+    cancelConfirm.addEventListener("click", hideConfirm);
+    okConfirm.addEventListener("click", hideConfirm);
+
+    document.querySelectorAll(".edit-row").forEach((button) => {
+      button.addEventListener("click", () => showDrawer("编辑账号"));
+    });
+
+    document.querySelectorAll(".confirm-row").forEach((button) => {
+      button.addEventListener("click", () => {
+        showConfirm(button.dataset.action, button.dataset.account);
+      });
+    });
+  </script>
+</body>
+</html>

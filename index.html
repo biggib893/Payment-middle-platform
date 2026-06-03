@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>支付管理系统 - 登录</title>
+  <style>
+    :root {
+      --primary: #0f2f57;
+      --primary-light: #1f5d99;
+      --success: #12a150;
+      --success-soft: #e9f7ef;
+      --danger: #d92d20;
+      --danger-soft: #fff1f0;
+      --text: #1f2937;
+      --muted: #667085;
+      --line: #d9e2ec;
+      --bg: #f5f7fa;
+      --white: #ffffff;
+      --shadow: 0 20px 50px rgba(15, 47, 87, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 960px;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .page {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background:
+        linear-gradient(180deg, #f7f9fc 0%, #eef3f8 100%),
+        repeating-linear-gradient(90deg, transparent 0, transparent 23px, rgba(15, 47, 87, 0.035) 24px);
+    }
+
+    .login-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 56px;
+    }
+
+    .login-card {
+      width: 480px;
+      padding: 42px 48px 40px;
+      background: var(--white);
+      border: 1px solid #e6edf5;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .login-title {
+      margin: 0 0 28px;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 0;
+      text-align: center;
+    }
+
+    .alert {
+      display: none;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px 12px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      line-height: 1.5;
+      border-radius: 6px;
+    }
+
+    .alert.show {
+      display: flex;
+    }
+
+    .alert.error {
+      color: var(--danger);
+      background: var(--danger-soft);
+      border: 1px solid #ffd6d2;
+    }
+
+    .alert.success {
+      color: #087443;
+      background: var(--success-soft);
+      border: 1px solid #bfe8ce;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #344054;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-wrap svg {
+      position: absolute;
+      top: 50%;
+      left: 14px;
+      width: 18px;
+      height: 18px;
+      color: #8a98aa;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    input {
+      width: 100%;
+      height: 44px;
+      padding: 0 14px 0 42px;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      background: #fbfcfe;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    input:focus {
+      background: var(--white);
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(31, 93, 153, 0.12);
+    }
+
+    .row-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: -2px 0 24px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .checkbox {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      cursor: default;
+      user-select: none;
+    }
+
+    .checkbox-box {
+      width: 14px;
+      height: 14px;
+      border: 1px solid #b8c4d2;
+      border-radius: 3px;
+    }
+
+    .login-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 44px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--white);
+      cursor: pointer;
+      background: var(--primary);
+      border: 0;
+      border-radius: 6px;
+      box-shadow: 0 10px 22px rgba(15, 47, 87, 0.2);
+      transition: background 0.18s ease, transform 0.18s ease;
+    }
+
+    .login-button:hover {
+      background: #123d70;
+    }
+
+    .login-button:active {
+      transform: translateY(1px);
+    }
+
+    .login-button.loading {
+      color: rgba(255, 255, 255, 0.88);
+      background: #245174;
+      cursor: wait;
+    }
+
+    .login-meta {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      margin-top: 24px;
+      font-size: 12px;
+      color: #8794a5;
+    }
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      background: #b9c4d0;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="login-panel" aria-label="登录表单">
+      <form class="login-card" id="loginForm">
+        <h2 class="login-title">账号登录</h2>
+
+        <div class="alert error" id="errorAlert" role="alert">
+          <span aria-hidden="true">!</span>
+          <span id="errorText">账号或密码错误，请核对后重新登录。</span>
+        </div>
+
+        <div class="alert success" id="successAlert" role="status">
+          <span aria-hidden="true">✓</span>
+          <span>登录成功，正在进入「华东商城」首页看板。</span>
+        </div>
+
+        <div class="form-group">
+          <label for="account">账号</label>
+          <div class="input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20 21C20 17.7 16.4 15 12 15C7.6 15 4 17.7 4 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M12 12C14.2 12 16 10.2 16 8C16 5.8 14.2 4 12 4C9.8 4 8 5.8 8 8C8 10.2 9.8 12 12 12Z" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <input id="account" name="account" type="text" autocomplete="username" placeholder="请输入账号">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">密码</label>
+          <div class="input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M7 10V8C7 5.2 9.2 3 12 3C14.8 3 17 5.2 17 8V10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M6.5 10H17.5C18.3 10 19 10.7 19 11.5V19.5C19 20.3 18.3 21 17.5 21H6.5C5.7 21 5 20.3 5 19.5V11.5C5 10.7 5.7 10 6.5 10Z" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 15V17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="请输入密码">
+          </div>
+        </div>
+
+        <div class="row-actions">
+          <span class="checkbox"><span class="checkbox-box" aria-hidden="true"></span>保持登录状态</span>
+          <span>企业安全认证</span>
+        </div>
+
+        <button class="login-button" id="loginButton" type="submit">登录</button>
+
+        <div class="login-meta">
+          <span>数据隔离</span>
+          <span class="dot" aria-hidden="true"></span>
+          <span>权限校验</span>
+          <span class="dot" aria-hidden="true"></span>
+          <span>支付安全</span>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const form = document.querySelector("#loginForm");
+    const account = document.querySelector("#account");
+    const password = document.querySelector("#password");
+    const errorAlert = document.querySelector("#errorAlert");
+    const errorText = document.querySelector("#errorText");
+    const successAlert = document.querySelector("#successAlert");
+    const loginButton = document.querySelector("#loginButton");
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      errorAlert.classList.remove("show");
+      successAlert.classList.remove("show");
+
+      if (!account.value.trim() || !password.value.trim()) {
+        errorText.textContent = "请输入账号和密码后再登录。";
+        errorAlert.classList.add("show");
+        return;
+      }
+
+      if (account.value.trim() !== "admin" || password.value.trim() !== "123456") {
+        errorText.textContent = "账号或密码错误，请核对后重新登录。";
+        errorAlert.classList.add("show");
+        return;
+      }
+
+      loginButton.classList.add("loading");
+      loginButton.textContent = "正在登录";
+
+      window.setTimeout(() => {
+        loginButton.classList.remove("loading");
+        loginButton.textContent = "登录";
+        successAlert.classList.add("show");
+      }, 650);
+    });
+  </script>
+</body>
+</html>
